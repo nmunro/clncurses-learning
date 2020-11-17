@@ -1,7 +1,6 @@
 (defpackage ui-test
   (:use :cl :cl-tui)
-  (:export #:main
-           #:start))
+  (:export #:start))
 (in-package :ui-test)
 
 ; Create a building class
