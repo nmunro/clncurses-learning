@@ -1,17 +1,10 @@
 (defpackage ui-test
-  (:use :cl :cl-tui)
+  (:use :cl :cl-tui :building :colors)
   (:export #:start))
 (in-package :ui-test)
 
-; Create a building class
-
 (defparameter player '(:icon #\@ :x 5 :y 7))
 (defparameter buildings (make-hash-table))
-
-(defvar rainbow-pairs
-  (let ((rainbow (list (color 1000 0 0) (color 1000 1000 0) (color 0 1000 0) (color 0 1000 1000) (color 0 0 1000) (color 1000 0 1000))))
-    (loop :for i :below 6
-          :collect (color-pair (elt rainbow (mod i 6)) (elt rainbow (mod (1+ i) 6))))))
 
 (define-children :root ()
   (map (simple-frame))
@@ -39,35 +32,17 @@
   (with-attributes ((:color (elt rainbow-pairs (mod 3 6)))) 'map
     (put-char 'map (getf player :x) (getf player :y) (getf player :icon))))
 
-(defun draw-building (building)
-  (with-attributes ((:color (elt rainbow-pairs (mod 3 6)))) 'map
-    ; This 'fills' the building
-    (dotimes (w (- (nth 2 building) 1))
-      (dotimes (h (- (nth 3 building) 1))
-        (put-char 'map (+ 1 w) (+ 1 h) #\.)))
-
-    (loop :for h :from (1+ (nth 0 building)) :to (nth 3 building)
-          :for w :from (1+ (nth 1 building)) :to (nth 2 building)
-          :do (progn
-                (put-char 'map h (nth 1 building)      #\|)
-                (put-char 'map h (nth 2 building)      #\|)
-                (put-char 'map (nth 0 building) w      #\-)
-                (put-char 'map (nth 3 building) w      #\-)))
-
-    (put-char 'map (nth 0 building) (nth 1 building) #\+)
-    (put-char 'map (nth 0 building) (nth 3 building) #\+)
-    (put-char 'map (nth 2 building) (nth 1 building) #\+)
-    (put-char 'map (nth 2 building) (nth 3 building) #\+)))
-
 (defun draw-map ()
   (loop for building being each hash-value in buildings
-        :do (draw-building building))
+        :do (draw building))
 
   (draw-player))
 
 (defun build-map ()
   ; register buildings here
-  (setf (gethash :hotel buildings) '(1 1 8 8 (:x 5 :y 8))))
+  (let* ((chamber (make-chamber 1 1 8 8))
+         (building (make-building "hotel" `(,chamber))))
+    (setf (gethash :hotel buildings) building)))
 
 (defun start ()
   (build-map)

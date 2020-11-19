@@ -5,7 +5,9 @@
   :depends-on (:cl-tui)
   :components ((:module "src"
                 :components
-                ((:file "main"))))
+                ((:file "colors")
+                 (:file "building")
+                 (:file "main"))))
   :description ""
   :in-order-to ((test-op (test-op "ui-test/tests"))))
 
