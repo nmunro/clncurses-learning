@@ -1,5 +1,5 @@
 (defpackage player
-  (:use :cl :cl-tui :obj :colors)
+  (:use :cl :obj)
   (:export #:player
            #:make-player
            #:icon
