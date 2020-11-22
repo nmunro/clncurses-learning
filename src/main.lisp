@@ -1,80 +1,76 @@
 (defpackage ui-test
-  (:use :cl :cl-tui :building :colors)
+  (:use :cl :cl-tui :map :player :building :colors)
   (:export #:start))
 (in-package :ui-test)
 
-(defparameter player '(:icon #\@ :x 5 :y 7))
-(defparameter buildings (make-hash-table))
-
 (define-children :root ()
-  (map (simple-frame))
-  (input (edit-frame :prompt "> ") :h 1))
+  (map-box   (simple-frame))
+  (input-box (edit-frame :prompt "> ") :h 1))
 
-(defun finish-input (line)
-  (let ((text (get-text 'input)))
-    (put-text 'map line 1 text)
-    (clear-text 'input)))
+(defun finish-input ()
+  (let ((text (get-text 'input-box)))
+    (clear-text 'input-box)))
 
-(defun check-collisions ()
-  ; loop through all the buildings and rooms and check the player isn't trying to occupy a wall
-  nil)
+(defmethod draw ((player player))
+  (with-attributes ((:color (elt rainbow-pairs (mod 3 6)))) 'map-box
+    (put-char 'map-box (x player) (y player) (icon player))))
 
-(defun move-player (direction)
-  ; Must put a check here to determine the dimensions of the building the player is in.
-  (if (not (check-collisions))
-    (cond
-        ((eql direction :up)    (decf (getf player :x)))
-        ((eql direction :down)  (incf (getf player :x)))
-        ((eql direction :right) (incf (getf player :y)))
-        ((eql direction :left)  (decf (getf player :y))))))
+(defmethod draw ((building building))
+  (with-attributes ((:color (elt rainbow-pairs (mod 3 6)))) 'map-box
+    ; This 'fills' the building
+    (dotimes (w (- (width building) 1))
+      (dotimes (h (- (height building) 1))
+        (put-char 'map-box (+ 1 w) (+ 1 h) #\.)))
 
-(defun draw-player ()
-  (with-attributes ((:color (elt rainbow-pairs (mod 3 6)))) 'map
-    (put-char 'map (getf player :x) (getf player :y) (getf player :icon))))
+    (loop :for h :from (1+ (x building)) :to (height building)
+          :for w :from (1+ (y building)) :to (width building)
+          :do (progn
+                (put-char 'map-box h (y building)      #\|)
+                (put-char 'map-box h (height building) #\|)
+                (put-char 'map-box (x building) w      #\-)
+                (put-char 'map-box (width building) w  #\-)))
 
-(defun draw-map ()
-  (loop for building being each hash-value in buildings
+    (put-char 'map-box (x building)      (y building)     #\+)
+    (put-char 'map-box (x building)      (width building) #\+)
+    (put-char 'map-box (height building) (y building)     #\+)
+    (put-char 'map-box (height building) (width building) #\+)))
+
+(defmethod draw ((atlas atlas))
+  (loop for building being each hash-value in (buildings atlas)
         :do (draw building))
 
-  (draw-player))
-
-(defun build-map ()
-  ; register buildings here
-  (let* ((chamber (make-chamber 1 1 8 8))
-         (building (make-building "hotel" `(,chamber))))
-    (setf (gethash :hotel buildings) building)))
+  (draw (protagonist atlas)))
 
 (defun start ()
-  (build-map)
-
-  (let ((counter 1))
+  (let* ((character (make-player "Bob" 5 7))
+         (atlas (make-map character `(,(make-building "hotel" 1 1 8 8)))))
     (with-screen (:colors) ; this :colors allows the with-attributes to work!
-      (draw-box 'map)
-      (put-text 'map 0 2 " ~A " 'map)
+      (draw-box 'map-box)
+      (put-text 'map-box 0 2 " MAP ")
 
       (loop
-        (draw-map)
+        (draw atlas) ; Entry point for the bug
         (refresh)
+
         (let ((key (read-key)))
           (case key
             (#\Esc
               (return))
 
             (:key-up
-              (move-player :up))
+              (move character :up))
 
             (:key-down
-              (move-player :down))
+              (move character :down))
 
             (:key-right
-              (move-player :right))
+              (move character :right))
 
             (:key-left
-              (move-player :left))
+              (move character :left))
 
             (#\Newline
-              (finish-input counter)
-              (setf counter (1+ counter)))
+              (finish-input))
 
             (t
-             (handle-key 'input key))))))))
+             (handle-key 'input-box key))))))))
