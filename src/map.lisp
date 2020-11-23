@@ -3,6 +3,7 @@
   (:export #:atlas
            #:protagonist
            #:buildings
+           #:check-collisions
            #:make-map))
 (in-package :map)
 
@@ -19,3 +20,14 @@
     (dolist (building buildings)
       (setf (gethash (name building) (buildings m)) building))
     m))
+
+(defun check-collisions (map obj)
+  ; for each building check north, east, south and west walls for collisions
+  (loop for building being each hash-value in (buildings atlas)
+        :do (cond
+              ; Start with the north wall
+              ((and (= (x obj) (x building)) (= (y obj) (y building)))
+               (return-from check-collisions t))
+
+              (t
+               (return-from check-collisions nil)))))

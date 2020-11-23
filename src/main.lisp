@@ -3,6 +3,9 @@
   (:export #:start))
 (in-package :ui-test)
 
+(defparameter protagonist (make-player "Bob" 5 7))
+(defparameter atlas       (make-map protagonist `(,(make-building "hotel" 1 1 8 8))))
+
 (define-children :root ()
   (map-box   (simple-frame))
   (input-box (edit-frame :prompt "> ") :h 1))
@@ -41,36 +44,49 @@
 
   (draw (protagonist atlas)))
 
+(defmethod move ((player player) direction)
+  (unless (check-collisions atlas player)
+    (cond
+      ((eql direction :up)
+       (setf (x player) (decf (x player))))
+
+      ((eql direction :down)
+       (setf (x player) (incf (x player))))
+
+      ((eql direction :right)
+       (setf (y player) (incf (y player))))
+
+      ((eql direction :left)
+       (setf (y player) (decf (y player)))))))
+
 (defun start ()
-  (let* ((character (make-player "Bob" 5 7))
-         (atlas (make-map character `(,(make-building "hotel" 1 1 8 8)))))
-    (with-screen (:colors) ; this :colors allows the with-attributes to work!
-      (draw-box 'map-box)
-      (put-text 'map-box 0 2 " MAP ")
+  (with-screen (:colors) ; this :colors allows the with-attributes to work!
+    (draw-box 'map-box)
+    (put-text 'map-box 0 2 " MAP ")
 
-      (loop
-        (draw atlas) ; Entry point for the bug
-        (refresh)
+    (loop
+      (draw atlas) ; Entry point for the bug
+      (refresh)
 
-        (let ((key (read-key)))
-          (case key
-            (#\Esc
-              (return))
+      (let ((key (read-key)))
+        (case key
+          (#\Esc
+            (return))
 
-            (:key-up
-              (move character :up))
+          (:key-up
+            (move protagonist :up))
 
-            (:key-down
-              (move character :down))
+          (:key-down
+            (move protagonist :down))
 
-            (:key-right
-              (move character :right))
+          (:key-right
+            (move protagonist :right))
 
-            (:key-left
-              (move character :left))
+          (:key-left
+            (move protagonist :left))
 
-            (#\Newline
-              (finish-input))
+          (#\Newline
+            (finish-input))
 
-            (t
-             (handle-key 'input-box key))))))))
+          (t
+            (handle-key 'input-box key)))))))
