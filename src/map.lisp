@@ -15,19 +15,42 @@
   (print-unreadable-object (object stream :type t)
     (format stream "Map: ~{~A~^, ~}" (buildings object))))
 
+(defun build-wall (x y direction len)
+  (let ((wall '()))
+    (dotimes (counter (1- len))
+      (cond
+        ((eql direction :horizontal)
+         (push `(,(1+ counter) ,y) wall))
+
+        ((eql direction :vertical)
+         (push `(,x ,(1+ counter)) wall))))
+    wall))
+
 (defun make-map (protagonist buildings)
   (let ((m (make-instance 'atlas :name "map" :protagonist protagonist)))
     (dolist (building buildings)
       (setf (gethash (name building) (buildings m)) building))
     m))
 
-(defun check-collisions (map obj)
-  ; for each building check north, east, south and west walls for collisions
-  (loop for building being each hash-value in (buildings atlas)
-        :do (cond
-              ; Start with the north wall
-              ((and (= (x obj) (x building)) (= (y obj) (y building)))
-               (return-from check-collisions t))
+(defun check-collisions (map obj direction)
+  (labels ((check-north (building)
+             (let ((wall (build-wall (x building) (y building) :horizontal (width building))))
+               t))
 
-              (t
-               (return-from check-collisions nil)))))
+           (check-east  (building)
+             (let ((wall (build-wall (x building) (y building) :vertical (height building))))
+               t))
+
+           (check-south (building)
+             (let ((wall (build-wall (x building) (y building) :horizontal (width building))))
+               t))
+
+           (check-west  (building)
+             (let ((wall (build-wall (x building) (y building) :vertical (height building))))
+               t)))
+
+    (loop for building being each hash-value in (buildings atlas)
+        :do (or (check-north building)
+                (check-east building)
+                (check-south building)
+                (check-west building)))))
