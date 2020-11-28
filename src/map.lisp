@@ -19,10 +19,10 @@
   (let ((wall '()))
     (dotimes (counter (1- len))
       (cond
-        ((eql direction :horizontal)
+        ((eql direction :vertical)
          (push `(,(1+ counter) ,y) wall))
 
-        ((eql direction :vertical)
+        ((eql direction :horizontal)
          (push `(,x ,(1+ counter)) wall))))
     wall))
 
