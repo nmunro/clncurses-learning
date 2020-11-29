@@ -45,7 +45,7 @@
   (draw (protagonist atlas)))
 
 (defmethod move ((player player) direction)
-  (unless (check-collisions atlas player)
+  (unless (check-collisions atlas player direction)
     (cond
       ((eql direction :up)
        (setf (x player) (decf (x player))))
