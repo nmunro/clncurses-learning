@@ -16,15 +16,12 @@
     (format stream "Map: ~{~A~^, ~}" (buildings object))))
 
 (defun build-wall (x y direction len)
-  (let ((wall '()))
-    (dotimes (counter (1- len))
-      (cond
-        ((eql direction :vertical)
-         (push `(,(1+ counter) ,y) wall))
+  (cond
+    ((eql direction :vertical)
+     (loop for counter from 0 to (1- len) :collect `(,(1+ counter) ,y)))
 
-        ((eql direction :horizontal)
-         (push `(,x ,(1+ counter)) wall))))
-    wall))
+    ((eql direction :horizontal)
+     (loop for counter from 0 to (1- len) :collect `(,x ,(1+ counter))))))
 
 (defun make-map (protagonist buildings)
   (let ((m (make-instance 'atlas :name "map" :protagonist protagonist)))
