@@ -30,24 +30,23 @@
     m))
 
 (defun check-collisions (map obj direction)
+    (with-open-file (f "data.txt" :direction :output :if-exists :append :if-does-not-exist :create)
   (labels ((check-north (building)
-             (let ((wall (build-wall (x building) (y building) :horizontal (width building))))
-               t))
+             (format f "North Wall: ~A~%" (build-wall (x building) (y building) :horizontal (width building)))
+            (find `(,(x obj) ,(1- (y obj))) (build-wall (x building) (y building) :horizontal (width building)) :test #'equal))
 
            (check-east  (building)
-             (let ((wall (build-wall (x building) (y building) :vertical (height building))))
-               t))
+             (format f "East Wall: ~A~%" (build-wall (x building) (width building) :vertical (height building)))
+            (find `(,(1- (x obj)) ,(y obj)) (build-wall (x building) (width building) :vertical (height building)) :test #'equal))
 
            (check-south (building)
-             (let ((wall (build-wall (x building) (y building) :horizontal (width building))))
-               t))
+             (format f "South Wall: ~A~%" (build-wall (height building) (y building) :horizontal (width building)))
+            (find `(,(x obj) ,(1+ (y obj))) (build-wall (height building) (y building) :horizontal (width building)) :test #'equal))
 
            (check-west  (building)
-             (let ((wall (build-wall (x building) (y building) :vertical (height building))))
-               t)))
+             (format f "West Wall: ~A~%" (build-wall (x building) (y building) :vertical (height building)))
+            (find `(,(1+ (x obj)) ,(y obj)) (build-wall (x building) (y building) :vertical (height building)) :test #'equal)))
 
-    (loop for building being each hash-value in (buildings atlas)
-        :do (or (check-north building)
-                (check-east building)
-                (check-south building)
-                (check-west building)))))
+    ; collect all building wall collisions and return t or nil if there's any
+    ; t wouldn't actually be what's found, would need to look for a list!
+    (return-from check-collisions (remove nil (loop for building being each hash-value in (buildings atlas) :collect (or (check-north building) (check-east building) (check-south building) (check-west building))))))))
