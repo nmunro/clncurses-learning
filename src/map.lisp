@@ -18,10 +18,10 @@
 (defun build-wall (x y direction len)
   (cond
     ((eql direction :vertical)
-     (loop for counter from 0 to (1- len) :collect `(,(1+ counter) ,y)))
+     (loop for counter from x to (+ x (1- len)) :collect `(,counter ,y)))
 
     ((eql direction :horizontal)
-     (loop for counter from 0 to (1- len) :collect `(,x ,(1+ counter))))))
+     (loop for counter from y to (+ y (1- len)) :collect `(,x ,counter)))))
 
 (defun make-map (protagonist buildings)
   (let ((m (make-instance 'atlas :name "map" :protagonist protagonist)))
