@@ -45,19 +45,19 @@
   (draw (protagonist atlas)))
 
 (defmethod move ((player player) direction)
-  (unless (check-collisions atlas player direction)
+  (let ((collisions (check-collisions atlas player direction)))
     (cond
-      ((eql direction :up)
-       (setf (x player) (decf (x player))))
+      ((and (eql direction :up) (not (find :up collisions)))
+        (setf (x player) (decf (x player))))
 
-      ((eql direction :down)
-       (setf (x player) (incf (x player))))
+      ((and (eql direction :down) (not (find :down collisions)))
+        (setf (x player) (incf (x player))))
 
-      ((eql direction :right)
-       (setf (y player) (incf (y player))))
+      ((and (eql direction :right) (not (find :right collisions)))
+        (setf (y player) (incf (y player))))
 
-      ((eql direction :left)
-       (setf (y player) (decf (y player)))))))
+      ((and (eql direction :left) (not (find :left collisions)))
+        (setf (y player) (decf (y player)))))))
 
 (defun start ()
   (with-screen (:colors) ; this :colors allows the with-attributes to work!
