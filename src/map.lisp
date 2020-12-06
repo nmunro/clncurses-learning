@@ -31,9 +31,14 @@
 
 (defun check-collisions (map obj direction)
   (labels ((flatten (structure)
-            (cond ((null structure) nil)
-                    ((atom structure) (list structure))
-                    (t (mapcan #'flatten structure))))
+            (cond ((null structure)
+                    nil)
+
+                  ((atom structure)
+                    (list structure))
+
+                  (t
+                    (mapcan #'flatten structure))))
 
            (get-collisions ()
              `((:up ,(1- (x obj)) ,(y obj))
@@ -43,9 +48,9 @@
 
            (get-walls (building)
              (let ((north (build-wall (x building) (y building) :horizontal (width building)))
-                    (east  (build-wall (height building) (y building) :vertical (height building)))
-                    (south (build-wall (x building) (width building) :horizontal (width building)))
-                    (west  (build-wall (x building) (y building) :vertical (height building))))
+                   (east  (build-wall (height building) (y building) :vertical (height building)))
+                   (south (build-wall (x building) (width building) :horizontal (width building)))
+                   (west  (build-wall (x building) (y building) :vertical (height building))))
                (append north east south west)))
 
            (get-direction (coords building)
