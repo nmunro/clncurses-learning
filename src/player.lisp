@@ -5,8 +5,7 @@
            #:icon
            #:inventory
            #:x
-           #:y
-           #:move))
+           #:y))
 (in-package :player)
 
 (defclass player (moveable)
@@ -19,17 +18,3 @@
 
 (defun make-player (name x y)
   (make-instance 'player :name name :x x :y y))
-
-(defmethod move ((player player) direction)
-  (cond
-    ((eql direction :up)
-     (setf (x player) (decf (x player))))
-
-    ((eql direction :down)
-     (setf (x player) (incf (x player))))
-
-    ((eql direction :right)
-     (setf (y player) (incf (y player))))
-
-    ((eql direction :left)
-     (setf (y player) (decf (y player))))))

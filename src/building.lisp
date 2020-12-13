@@ -1,5 +1,5 @@
 (defpackage building
-  (:use :cl :cl-tui :colors :obj)
+  (:use :cl :obj)
   (:export #:building
            #:x
            #:y
@@ -9,8 +9,9 @@
 (in-package :building)
 
 (defclass building (drawable)
-  ((height :initarg :height :initform 1 :reader height)
-   (width  :initarg :width  :initform 1 :reader width)))
+  ((height :initarg :height :initform 1 :type integer :reader height :documentation "Height of a building")
+   (width  :initarg :width  :initform 1 :type integer :reader width  :documentation "Width of a building"))
+  (:documentation "Represents a building on a map"))
 
 (defmethod print-object ((object building) stream)
   (print-unreadable-object (object stream :type t)

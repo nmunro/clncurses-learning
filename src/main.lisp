@@ -3,6 +3,9 @@
   (:export #:start))
 (in-package :ui-test)
 
+(defparameter protagonist (make-player "Bob" 5 7))
+(defparameter atlas       (make-map protagonist `(,(make-building "hotel" 1 1 8 8))))
+
 (define-children :root ()
   (map-box   (simple-frame))
   (input-box (edit-frame :prompt "> ") :h 1))
@@ -41,36 +44,49 @@
 
   (draw (protagonist atlas)))
 
+(defmethod move ((player player) direction)
+  (let ((collisions (check-collisions atlas player direction)))
+    (cond
+      ((and (eql direction :up) (not (find :up collisions)))
+        (setf (x player) (decf (x player))))
+
+      ((and (eql direction :down) (not (find :down collisions)))
+        (setf (x player) (incf (x player))))
+
+      ((and (eql direction :right) (not (find :right collisions)))
+        (setf (y player) (incf (y player))))
+
+      ((and (eql direction :left) (not (find :left collisions)))
+        (setf (y player) (decf (y player)))))))
+
 (defun start ()
-  (let* ((character (make-player "Bob" 5 7))
-         (atlas (make-map character `(,(make-building "hotel" 1 1 8 8)))))
-    (with-screen (:colors) ; this :colors allows the with-attributes to work!
-      (draw-box 'map-box)
-      (put-text 'map-box 0 2 " MAP ")
+  (with-screen (:colors) ; this :colors allows the with-attributes to work!
+    (draw-box 'map-box)
+    (put-text 'map-box 0 2 " MAP ")
 
-      (loop
-        (draw atlas) ; Entry point for the bug
-        (refresh)
+    (loop
+      (draw atlas) ; Entry point for the bug
+      (refresh)
 
-        (let ((key (read-key)))
-          (case key
-            (#\Esc
-              (return))
+      (let ((key (read-key)))
+        (case key
+          (#\Esc
+            (return))
 
-            (:key-up
-              (move character :up))
+          (:key-up
+            (move protagonist :up))
 
-            (:key-down
-              (move character :down))
+          (:key-down
+            (move protagonist :down))
 
-            (:key-right
-              (move character :right))
+          (:key-right
+            (move protagonist :right))
 
-            (:key-left
-              (move character :left))
+          (:key-left
+            (move protagonist :left))
 
-            (#\Newline
-              (finish-input))
+          (#\Newline
+            (finish-input))
 
-            (t
-             (handle-key 'input-box key))))))))
+          (t
+            (handle-key 'input-box key)))))))
